@@ -1,12 +1,14 @@
 
 install:
 	pip install -r ./requirements.txt
+	pip install --no-deps -e .
 
 install-dev: HADO_PATH=${VIRTUAL_ENV}/bin/hadolint
+install-dev: HADO_LINK=https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64
 install-dev:
 	pip install -r ./requirements_dev.txt
 	# Install hadolint
-	if [ ! -e ${HADO_PATH} ]; then wget -O ${HADO_PATH} https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64; fi;
+	if [ ! -e ${HADO_PATH} ]; then wget -O ${HADO_PATH} ${HADO_LINK}; fi;
 	chmod +x ${HADO_PATH}
 
 test:
