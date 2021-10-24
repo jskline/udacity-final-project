@@ -5,6 +5,7 @@ buisld-backend = "setuptools.build_meta"
 [tool.pytest.ini_options]
 addopts = "--cov=simpleapi"
 testpaths = ["tests"]
+filterwarnings = "ignore::DeprecationWarning"
 
 [tool.mypy]
 mypy_path = "src"
