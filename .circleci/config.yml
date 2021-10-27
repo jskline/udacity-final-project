@@ -43,15 +43,15 @@ jobs:
           make lint
   
   docker-build:
-    docker:
-      - image: docker:20.10.10-git
+    machine:
+      image: ubuntu-2004:202107-02
     steps:
       - checkout
       - setup_remote_docker
       - run:
           name: Install Dependencies
           command: |
-            apk add --no-cache py3-pip=20.3.4-r1
+            apt install python3-pip
             pip3 install awscli==2.2.25
       - run:
           name: Build simpleapi Docker image
