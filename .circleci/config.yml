@@ -75,7 +75,7 @@ workflows:
           requires: [test]
           filters:
             branches:
-              only: [master]
+              only: [main]
       #- deploy-green
       #- smoke-test
       #- switch
