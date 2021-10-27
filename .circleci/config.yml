@@ -21,6 +21,7 @@ jobs:
         paths:
           - ./venv
         key: simpleapi-v1-dependencies-{{ .Environment.CIRCLE_SHA1 }}
+
   test:
     docker:
       - image: python:3.8
@@ -40,6 +41,29 @@ jobs:
         command: |
           . venv/bin/activate
           make lint
+  
+  docker-build:
+    docker:
+      - image: docker:20.10.10-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install Dependencies
+          command: |
+            apk add --no-cache py3-pip=20.3.4-r1
+            pip3 install awscli==2.2.25
+      - run:
+          name: Build simpleapi Docker image
+          command: |
+            docker build -t simpleapi:latest
+      - run:
+          name: Push simpleapi Docker image
+          command: |
+            aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin ${ECR_ENDPOINT}
+            docker tag simpleapi:latest ${ECR_ENDPOINT}/simpleapi:${CIRCLE_SHA1}
+            docker push "${ECR_ENDPOINT}/simpleapi:${CIRCLE_SHA1}"
+
 
 workflows:
   default:
@@ -47,3 +71,12 @@ workflows:
       - build
       - test:
           requires: [build]
+      - docker-build:
+          requires: [test]
+          filters:
+            branches:
+              only: [master]
+      #- deploy-green
+      #- smoke-test
+      #- switch
+      #- delete-blue
