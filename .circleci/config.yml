@@ -52,11 +52,11 @@ jobs:
           name: Install Dependencies
           command: |
             apk add --no-cache py3-pip=20.3.4-r1
-            pip3 install awscli==2.2.25
+            pip3 install awscli
       - run:
           name: Build simpleapi Docker image
           command: |
-            docker build -t simpleapi:latest
+            docker build -t simpleapi:latest .
       - run:
           name: Push simpleapi Docker image
           command: |
