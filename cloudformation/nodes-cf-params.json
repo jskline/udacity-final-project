@@ -1,0 +1,26 @@
+[
+    {
+        "ParameterKey": "ClusterControlPlaneSecurityGroup",
+        "ParameterValue": "sg-0826c2752af981817"
+    },
+    {
+        "ParameterKey": "ClusterName",
+        "ParameterValue": "simpleapi-cluster"
+    },
+    {
+        "ParameterKey": "KeyName",
+        "ParameterValue": "simpleapi"
+    },
+    {
+        "ParameterKey": "NodeGroupName",
+        "ParameterValue": "group-one"
+    },
+    {
+        "ParameterKey": "Subnets",
+        "ParameterValue": "subnet-00f54174941ecc874,subnet-0e39cc14599e771f6"
+    },
+    {
+        "ParameterKey": "VpcId",
+        "ParameterValue": "vpc-0bed2db6ea01f3efe"
+    }
+]
