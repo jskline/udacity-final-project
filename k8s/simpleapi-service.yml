@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: simpleapi
+spec:
+  selector:
+    app: simpleapi
+  ports:
+  - port: 5000
+    targetPort: flask
+  type: LoadBalancer

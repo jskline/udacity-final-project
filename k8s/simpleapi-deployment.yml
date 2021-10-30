@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simpleapi
+  labels:
+    app: simpleapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simpleapi
+  template:
+    metadata:
+      labels:
+        app: simpleapi
+    spec:
+      containers:
+      - name: simpleapi
+        image: 251159765025.dkr.ecr.us-east-2.amazonaws.com/simpleapi:latest
+        ports:
+        - containerPort: 5000
+          name: flask
