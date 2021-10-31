@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: simpleapi
+  name: simpleapi-VERSION
   labels:
     app: simpleapi
 spec:
@@ -13,10 +13,13 @@ spec:
     metadata:
       labels:
         app: simpleapi
+        version: VERSION
+      annotations:
+        forceRedeployUniqId: "VERSION"
     spec:
       containers:
       - name: simpleapi
-        image: 251159765025.dkr.ecr.us-east-2.amazonaws.com/simpleapi:latest
+        image: 251159765025.dkr.ecr.us-east-2.amazonaws.com/simpleapi:VERSION
         ports:
         - containerPort: 5000
           name: flask

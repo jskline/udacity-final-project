@@ -34,3 +34,9 @@ Add circleCI project environment variables with your AWS credentials:
     AWS_ACCESS_KEY_ID
     AWS_DEFAULT_REGION
     AWS_SECRET_ACCESS_KEY
+
+## Cloudformation
+
+Sources
+
+    https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html

@@ -1,5 +1,9 @@
 version: 2.1
 
+orbs:
+  aws-eks: circleci/aws-eks@1.1.0
+  kubernetes: circleci/kubernetes@0.12.0
+
 jobs:
   build:
     docker:
@@ -61,9 +65,52 @@ jobs:
           name: Push simpleapi Docker image
           command: |
             aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin ${ECR_ENDPOINT}
-            docker tag simpleapi:latest ${ECR_ENDPOINT}/simpleapi:${CIRCLE_SHA1}
-            docker push "${ECR_ENDPOINT}/simpleapi:${CIRCLE_SHA1}"
+            docker tag simpleapi:latest ${ECR_ENDPOINT}/simpleapi:${CIRCLE_SHA1:0:7}
+            docker push "${ECR_ENDPOINT}/simpleapi:${CIRCLE_SHA1:0:7}"
 
+  blue-green-deploy:
+    executor: aws-eks/python3
+    steps:
+      - checkout
+      - run:
+          name: Update deployment and service version selector 
+          command: |
+            sed -i "s/VERSION/${CIRCLE_SHA1:0:7}/g" k8s/simpleapi-deployment.yml
+            sed -i "s/VERSION/${CIRCLE_SHA1:0:7}/g" k8s/simpleapi-service.yml
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: simpleapi-cluster
+          install-kubectl: true
+          aws-region: us-east-2
+      - run:
+          name: Get Blue simpleapi version
+          command: |
+            kubectl get service simpleapi -ojsonpath='{.spec.selector.version}' > blue.txt
+            cat blue.txt
+      - kubernetes/create-or-update-resource:
+          resource-file-path: "k8s/simpleapi-deployment.yml"
+          get-rollout-status: true
+          resource-name: deployment/simpleapi-${CIRCLE_SHA1:0:7}
+          show-kubectl-command: true
+      # - run:
+      #     name: Smoke test Green Deployment
+      #     command: |
+      #       export API_URL=$(kubectl get service simpleapi -o=jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+      #       if curl -s $API_URL | grep "status"
+      #         then
+      #           return 0
+      #           echo "Smoke Test Success"
+      #         else
+      #           return 1
+      #         fi
+      - kubernetes/create-or-update-resource:
+          resource-file-path: "k8s/simpleapi-service.yml"
+          resource-name: service/simpleapi
+          show-kubectl-command: true
+      - run:
+          name: Delete the Blue deployment
+          command: |
+            export BLUE=$(cat blue.txt)
+            kubectl delete deployment simpleapi-${BLUE}
 
 workflows:
   default:
@@ -76,7 +123,9 @@ workflows:
           filters:
             branches:
               only: [main]
-      #- deploy-green
-      #- smoke-test
-      #- switch
-      #- delete-blue
+      - blue-green-deploy:
+          requires: [docker-build]
+          filters:
+            branches:
+              only: [main]
+

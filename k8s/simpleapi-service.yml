@@ -4,7 +4,7 @@ metadata:
   name: simpleapi
 spec:
   selector:
-    app: simpleapi
+    version: VERSION
   ports:
   - port: 5000
     targetPort: flask
