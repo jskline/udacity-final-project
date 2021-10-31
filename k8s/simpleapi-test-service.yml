@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: simpleapi-test
+spec:
+  selector:
+    version: VERSION
+  ports:
+  - port: 5000
+    targetPort: flask
+  type: LoadBalancer

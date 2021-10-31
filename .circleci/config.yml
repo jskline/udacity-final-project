@@ -77,6 +77,7 @@ jobs:
           command: |
             sed -i "s/VERSION/${CIRCLE_SHA1:0:7}/g" k8s/simpleapi-deployment.yml
             sed -i "s/VERSION/${CIRCLE_SHA1:0:7}/g" k8s/simpleapi-service.yml
+            sed -i "s/VERSION/${CIRCLE_SHA1:0:7}/g" k8s/simpleapi-test-service.yml
       - aws-eks/update-kubeconfig-with-authenticator:
           cluster-name: simpleapi-cluster
           install-kubectl: true
@@ -91,17 +92,21 @@ jobs:
           get-rollout-status: true
           resource-name: deployment/simpleapi-${CIRCLE_SHA1:0:7}
           show-kubectl-command: true
-      # - run:
-      #     name: Smoke test Green Deployment
-      #     command: |
-      #       export API_URL=$(kubectl get service simpleapi -o=jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-      #       if curl -s $API_URL | grep "status"
-      #         then
-      #           return 0
-      #           echo "Smoke Test Success"
-      #         else
-      #           return 1
-      #         fi
+      - kubernetes/create-or-update-resource:
+          resource-file-path: "k8s/simpleapi-test-service.yml"
+          resource-name: service/simpleapi-test
+          show-kubectl-command: true
+      - run:
+          name: Smoke test Green Deployment
+          command: |
+            sleep 5
+            export API_URL=$(kubectl get service simpleapi-test -o=jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            if curl -s ${API_URL}:5000/status | grep "status"
+              then
+                echo "Smoke Test Success"
+              else
+                exit 1
+              fi
       - kubernetes/create-or-update-resource:
           resource-file-path: "k8s/simpleapi-service.yml"
           resource-name: service/simpleapi
@@ -111,6 +116,10 @@ jobs:
           command: |
             export BLUE=$(cat blue.txt)
             kubectl delete deployment simpleapi-${BLUE}
+      - run:
+          name: Failure - delete Green deployment
+          command: kubectl delete deployment simpleapi-${CIRCLE_SHA1:0:7}
+          when: on_fail
 
 workflows:
   default:
