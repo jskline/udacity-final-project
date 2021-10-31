@@ -57,10 +57,27 @@ jobs:
           command: |
             apk add --no-cache py3-pip=20.3.4-r1
             pip3 install awscli
+      - restore_cache:
+          keys:
+            - v1-{{ .Branch }}
+      - run:
+          name: Load Docker layer cache
+          command: |
+            set +o pipefail
+            docker load -i /caches/simpleapi.tar | :
       - run:
           name: Build simpleapi Docker image
           command: |
-            docker build -t simpleapi:latest .
+            docker build --cache-from=simpleapi -t simpleapi:latest .
+      - run:
+          name: Save Docker layer cache
+          command: |
+            mkdir -p /caches
+            docker save -o /caches/simpleapi.tar simpleapi:latest
+      - save_cache:
+          key: v1-{{ .Branch }}-{{ epoch }}
+          paths:
+            - /caches/simpleapi.tar
       - run:
           name: Push simpleapi Docker image
           command: |
@@ -99,7 +116,9 @@ jobs:
       - run:
           name: Smoke test Green Deployment
           command: |
-            sleep 5
+            # Wait for test-service LoadBalancer to reflect the changes
+            sleep 20
+
             export API_URL=$(kubectl get service simpleapi-test -o=jsonpath='{.status.loadBalancer.ingress[0].hostname}')
             if curl -s ${API_URL}:5000/status | grep "status"
               then
@@ -137,4 +156,3 @@ workflows:
           filters:
             branches:
               only: [main]
-
