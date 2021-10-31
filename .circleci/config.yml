@@ -117,7 +117,7 @@ jobs:
           name: Smoke test Green Deployment
           command: |
             # Wait for test-service LoadBalancer to reflect the changes
-            sleep 20
+            sleep 200
 
             export API_URL=$(kubectl get service simpleapi-test -o=jsonpath='{.status.loadBalancer.ingress[0].hostname}')
             if curl -s ${API_URL}:5000/status | grep "status"

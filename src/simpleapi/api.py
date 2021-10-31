@@ -8,7 +8,7 @@ from flask_restplus import Resource, Api
 from typing import Dict
 
 app = Flask(__name__)
-api = Api(app, version="1.3")
+api = Api(app, version="1.4")
 
 
 @api.route('/status')
